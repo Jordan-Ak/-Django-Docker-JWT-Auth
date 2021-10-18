@@ -48,7 +48,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
    #Swagger URLS
-   re_path(r'', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+   path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
     #JWT urls login
     path('users/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
