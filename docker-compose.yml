@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    restart: unless-stopped
+
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432' #Default port listed explicitly
+
+  #pgadmin:
+   # container_name: pgadmin4_container
+    #image: dpage/pgadmin4
+    #environment:
+     # PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      #PGADMIN_DEFAULT_PASSWORD: root
+    #ports:
+     # - "5050:80"
+  
+  web:
+    build: .
+    command: >
+      bash -c "while !</dev/tcp/db/5432; do sleep 1; done; python manage.py makemigrations && python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8000"
+    
+    restart: unless-stopped
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db  
+  
+#The image below is for running celery based on the same web image, I am doubtful if creating
+# Another service is the cleanest way to go about this
+  celery:
+    image: delicious_web:latest
+    restart: unless-stopped
+    volumes:
+      - .:/code
+    #environment:
+      #rabbitmq_uri: amqp://127.0.0.1:5672
+    command: >
+      bash -c " celery -A deli worker --loglevel=INFO"
+
+    
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    restart: unless-stopped
+    
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    ports:
+      #AMPQ protocol port default port listed explicitly
+      - '5672:5672'
+      #HTTP management UI
+      - '15672:15672'
+ 
+
