@@ -87,6 +87,7 @@ docker-compose up
 ** A User goes to the sign up page and then creates a user. If everything the user typed is valid(The serializers make this check), a new user is created and a verification mail is sent to the user's email.
 ** Django and postgres are linked via the settings in the Project.Settings (in my case deli.settings).
 ** The process of sending the mail is sent to the celery worker, and the celery worker authenticates at the RabbitMq container which it uses to process and execute the task.
+
 ** Other processes such as Resetting the user password involves the same kind of workflow. the Tokens generated for email verificaition and password reset are stored in the database witih expiry times.
 
 That's it for the Project explanations.
